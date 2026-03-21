@@ -1,7 +1,7 @@
 #include "commands.h"
 
 
-// helpers ASDASDNKASJDAKLSDASD
+//-------------- helpers -------------
 std::string image_url = "https://raw.githubusercontent.com/Dippinlow/hexgame-DPP/refs/heads/main/assets/image.png";
 std::string get_display_name(const dpp::user& user)
 {
@@ -25,7 +25,7 @@ dpp::message handle_game_cancel(uint64_t channel_id, GameManager& gm)
     return dpp::message("Game cancelled. No rating changes.");
 }
 
-// validate commands
+//------------ validate commands ---------------
 
 bool validate_challenge(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err)
 {
