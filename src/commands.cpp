@@ -2,7 +2,7 @@
 
 
 // helpers ASDASDNKASJDAKLSDASD
-
+std::string image_url = "https://raw.githubusercontent.com/Dippinlow/hexgame-DPP/refs/heads/main/assets/image.png";
 std::string get_display_name(const dpp::user& user)
 {
     if (!user.global_name.empty()) return user.global_name;
@@ -237,7 +237,7 @@ dpp::message handle_stats(const dpp::slashcommand_t& event, DataHandler& dh)
     dpp::embed e;
     e.set_color(colour_int);
     e.set_title(name + "'s Stats");
-    e.set_thumbnail("https://raw.githubusercontent.com/Dippinlow/hex-game/refs/heads/main/image.png");
+    e.set_thumbnail(image_url);
     e.add_field("Rating",       std::to_string(elo),    true);
     e.add_field("Wins",         std::to_string(wins),   true);
     e.add_field("Losses",       std::to_string(losses), true);
@@ -253,7 +253,7 @@ dpp::message handle_leaderboard(const dpp::slashcommand_t& event, DataHandler& d
     dpp::embed e;
     e.set_color(0x4F89FF);
     e.set_title("Hex Leaderboard");
-    e.set_thumbnail("https://raw.githubusercontent.com/Dippinlow/hex-game/refs/heads/main/image.png");
+    e.set_thumbnail(image_url);
 
     std::string board;
     int count = std::min((int)players.size(), 10);
