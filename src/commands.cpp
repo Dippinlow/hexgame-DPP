@@ -39,6 +39,13 @@ bool validate_challenge(const dpp::slashcommand_t& event, GameManager& gm, dpp::
         return false;
     }
 
+    auto it = event.command.resolved.users.find(player2);
+    if (it != event.command.resolved.users.end() && it->second.is_bot())
+    {
+        err = dpp::message("You can't challenge a bot.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
     if (!gm.create_game(channel_id, player1, player2))
     {
         err = dpp::message("A game already exists in this channel.").set_flags(dpp::m_ephemeral);
