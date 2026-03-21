@@ -8,6 +8,9 @@ enum Cell : unsigned char {
     PLAYER1 = 1,
     PLAYER2 = 2
 };
+struct Move {
+    int i, j;
+};
 
 class Game 
 {
@@ -33,6 +36,8 @@ public:
     int get_round() const;
     
     std::time_t get_last_move_time() const;
+
+    Move get_random_move() const;
 
 
 private:

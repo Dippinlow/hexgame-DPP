@@ -13,6 +13,8 @@ static GameManager gameManager;
 static DataHandler dataHandler("../data/players.json");
 static GraphicsHandler graphicsHandler;
 
+uint64_t BOT_ID = 0;
+
 void update_presence(dpp::cluster& bot, GameManager& gm)
 {
     int count = gm.get_active_game_count();
@@ -46,13 +48,13 @@ int main()
     if (event.command.get_command_name() == "challenge")
     {
         dpp::message error;
-        if(!validate_challenge(event, gameManager, error))
+        if(!validate_challenge(event, gameManager, error, BOT_ID))
         {
             event.reply(error);
             return;
         }
         event.thinking();
-        event.edit_original_response(apply_challenge(event, gameManager, dataHandler, graphicsHandler));
+        event.edit_original_response(apply_challenge(event, gameManager, dataHandler, graphicsHandler, BOT_ID));
         update_presence(bot, gameManager);
     }
     else if (event.command.get_command_name() == "move")
@@ -64,11 +66,11 @@ int main()
             return;
         }
         event.thinking();
-        event.edit_original_response(apply_move(event, gameManager, dataHandler, graphicsHandler));
+        event.edit_original_response(apply_move(event, gameManager, dataHandler, graphicsHandler, BOT_ID));
         update_presence(bot, gameManager);
     }
         
-    else if (event.command.get_command_name() == "setcolour")
+    else if (event.command.get_command_name() == "colour")
     {
         event.thinking(true);
         event.edit_original_response(handle_setcolour(event, dataHandler));
@@ -88,7 +90,7 @@ int main()
         event.thinking();
         event.edit_original_response(handle_leaderboard(event, dataHandler));
     }
-    else if (event.command.get_command_name() == "setname")
+    else if (event.command.get_command_name() == "name")
     {
         event.thinking(true);
         event.edit_original_response(handle_setname(event, dataHandler));
@@ -116,29 +118,30 @@ int main()
     bot.on_ready([&bot](const dpp::ready_t&) 
     {
         update_presence(bot, gameManager);
+        BOT_ID = bot.me.id;
         
         if (dpp::run_once<struct register_bot_commands>()) 
         {
-            dpp::slashcommand challenge("challenge", "challenge another player", bot.me.id);
-            challenge.add_option(dpp::command_option(dpp::co_user, "player", "The other player", true));
+            dpp::slashcommand challenge("challenge", "Challenge another player.", bot.me.id);
+            challenge.add_option(dpp::command_option(dpp::co_user, "player", "The other player.", true));
 
-            dpp::slashcommand move_cmd("move", "Make a move", bot.me.id);
-            move_cmd.add_option(dpp::command_option(dpp::co_string, "position", "e.g. A5", true));
+            dpp::slashcommand move_cmd("move", "Make a move.", bot.me.id);
+            move_cmd.add_option(dpp::command_option(dpp::co_string, "position", "e.g, A5.", true));
 
-            dpp::slashcommand setcolour_cmd("setcolour", "Set your hex colour", bot.me.id);
+            dpp::slashcommand setcolour_cmd("colour", "Set your hex colour.", bot.me.id);
             setcolour_cmd.add_option(dpp::command_option(dpp::co_string, "colour", "Hex colour e.g. #FF0013", true));
 
-            dpp::slashcommand forfeit_cmd("forfeit", "end the game", bot.me.id);
+            dpp::slashcommand forfeit_cmd("forfeit", "End the game", bot.me.id);
 
-            dpp::slashcommand stats_cmd("stats", "View player stats", bot.me.id);
-            stats_cmd.add_option(dpp::command_option(dpp::co_user, "player", "Player to view stats for", false));
+            dpp::slashcommand stats_cmd("stats", "View player stats.", bot.me.id);
+            stats_cmd.add_option(dpp::command_option(dpp::co_user, "player", "Player to view stats for.", false));
 
-            dpp::slashcommand setname_cmd("setname", "Set your display name", bot.me.id);
-            setname_cmd.add_option(dpp::command_option(dpp::co_string, "name", "Your display name", true));
+            dpp::slashcommand setname_cmd("name", "Set your display name.", bot.me.id);
+            setname_cmd.add_option(dpp::command_option(dpp::co_string, "name", "Your display name.", true));
 
-            dpp::slashcommand help_cmd("help", "Learn how to play", bot.me.id);
+            dpp::slashcommand help_cmd("help", "Learn how to play.", bot.me.id);
 
-            dpp::slashcommand leaderboard_cmd("leaderboard", "Top 10 players", bot.me.id);
+            dpp::slashcommand leaderboard_cmd("leaderboard", "Top 10 players.", bot.me.id);
 
             bot.global_bulk_command_create({challenge, move_cmd, setcolour_cmd, forfeit_cmd, stats_cmd, 
                                                     setname_cmd, help_cmd, leaderboard_cmd});

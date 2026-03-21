@@ -27,7 +27,7 @@ dpp::message handle_game_cancel(uint64_t channel_id, GameManager& gm)
 
 //------------ validate commands ---------------
 
-bool validate_challenge(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err)
+bool validate_challenge(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err, uint64_t bot_id)
 {
     uint64_t player1    = event.command.get_issuing_user().id;
     uint64_t channel_id = event.command.channel_id;
@@ -40,7 +40,7 @@ bool validate_challenge(const dpp::slashcommand_t& event, GameManager& gm, dpp::
     }
 
     auto it = event.command.resolved.users.find(player2);
-    if (it != event.command.resolved.users.end() && it->second.is_bot())
+    if (it != event.command.resolved.users.end() && it->second.is_bot() && player2 != bot_id)
     {
         err = dpp::message("You can't challenge a bot.").set_flags(dpp::m_ephemeral);
         return false;
@@ -96,7 +96,7 @@ bool validate_move(const dpp::slashcommand_t& event, GameManager& gm, dpp::messa
 
 // apply commands
 
-dpp::message apply_challenge(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
+dpp::message apply_challenge(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh, uint64_t bot_id)
 {
     bool name_dirty = false;
     uint64_t player1    = event.command.get_issuing_user().id;
@@ -123,17 +123,29 @@ dpp::message apply_challenge(const dpp::slashcommand_t& event, GameManager& gm, 
 
     Game* game = gm.get_game(channel_id);
 
-
-    std::string path = render_board(game, dh, gh);
+    uint64_t first_player = game->get_current_player();
 
     dpp::message msg;
-    msg.content = "Game started between <@" + std::to_string(player1) + "> and <@" + std::to_string(player2) + ">!";
-    msg.content += "<@" + std::to_string(game->get_current_player()) + "> is going first.";
+
+    if (game->get_current_player() == bot_id)
+    {
+        Move m = game->get_random_move();
+        game->make_move(bot_id, m.i, m.j);
+        msg.content = "Game started! HexBot went first. <@" + std::to_string(game->get_current_player()) + ">'s turn.";
+    }
+    else
+    {
+        msg.content = "Game started! <@" + std::to_string(first_player) + "> is going first.";
+    }
+
+
+    std::string path = render_board(game, dh, gh);
+    
     msg.add_file("board.png", dpp::utility::read_file(path));
     return msg;
 }
 
-dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
+dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh, uint64_t bot_id)
 {
     uint64_t channel_id = event.command.channel_id;
     uint64_t player     = event.command.get_issuing_user().id;
@@ -145,6 +157,12 @@ dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataH
     int row = std::stoi(pos.substr(1)) - 1;
 
     game->make_move(player, col, row);
+
+    if (!game->is_over() && game->get_current_player() == bot_id)
+    {
+        Move m = game->get_random_move();
+        game->make_move(bot_id, m.i, m.j);
+    }
 
     std::string path = render_board(game, dh, gh);
 

@@ -139,6 +139,18 @@ bool Game::make_move(uint64_t player_id, int i, int j)
     return true;
 }
 
+Move Game::get_random_move() const
+{
+    Move moves[121];
+    int count = 0;
+    for (int i = 0; i < 11; i++)
+        for (int j = 0; j < 11; j++)
+            if (board[i][j] == EMPTY)
+                moves[count++] = {i, j};
+
+    return moves[std::rand() % count];
+}
+
 // ----------------- Turn handling -----------------
 void Game::next_turn() {
     turn_index = (turn_index + 1) % 2;
