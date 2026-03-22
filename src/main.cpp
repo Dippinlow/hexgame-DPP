@@ -154,7 +154,7 @@ int main()
 
             dpp::slashcommand leaderboard_cmd("leaderboard", "Top 10 players.", bot.me.id);
 
-            dpp::slashcommand swap_cmp("swap", "Steal the fist move.", bot.me.id);
+            dpp::slashcommand swap_cmp("swap", "Steal the first move.", bot.me.id);
 
             bot.global_bulk_command_create({challenge, move_cmd, setcolour_cmd, forfeit_cmd, stats_cmd, 
                                                     setname_cmd, help_cmd, leaderboard_cmd, swap_cmp});
