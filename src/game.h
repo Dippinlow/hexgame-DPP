@@ -33,11 +33,13 @@ public:
 
     bool make_move(uint64_t player_id, int col, int row);
 
-    int get_round() const;
+    int get_move_count() const;
     
     std::time_t get_last_move_time() const;
 
     Move get_random_move() const;
+
+    void swap_players();
 
 
 private:
@@ -52,7 +54,6 @@ private:
     int last_i = -1;
     int last_j = -1;
 
-    int round = 0;
     int move_count = 0;
 
     std::time_t last_move_time;

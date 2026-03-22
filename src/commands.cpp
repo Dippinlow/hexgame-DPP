@@ -66,6 +66,12 @@ bool validate_move(const dpp::slashcommand_t& event, GameManager& gm, dpp::messa
         return false;
     }
 
+    if (game->get_player1() != player && game->get_player2() != player)
+    {
+        err = dpp::message("You are not a player in this game.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
     if (game->get_current_player() != player){
         err = dpp::message("It's not your turn.").set_flags(dpp::m_ephemeral);
         return false;
@@ -88,6 +94,35 @@ bool validate_move(const dpp::slashcommand_t& event, GameManager& gm, dpp::messa
 
     if (!game->is_empty(col, row)){
         err = dpp::message("Invalid move: that cell is already occupied.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
+    return true;
+}
+
+bool validate_swap(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err)
+{
+    uint64_t channel_id = event.command.channel_id;
+    uint64_t player_id  = event.command.get_issuing_user().id;
+
+    Game* game = gm.get_game(channel_id);
+    if (!game){
+        err = dpp::message("No current game in this channel.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
+    if (game->get_player1() != player_id && game->get_player2() != player_id){
+        err = dpp::message("You are not a player in this game.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
+    if (game->get_move_count() != 1){
+        err = dpp::message("Swap is only valid after the first move.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
+    if (game->get_current_player() != player_id){
+        err = dpp::message("It's not your turn.").set_flags(dpp::m_ephemeral);
         return false;
     }
 
@@ -180,6 +215,23 @@ dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataH
     return msg;
 }
 
+dpp::message apply_swap(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
+{
+    uint64_t channel_id = event.command.channel_id;
+    uint64_t player_id  = event.command.get_issuing_user().id;
+
+    Game* game = gm.get_game(channel_id);
+    game->swap_players();
+
+    std::string path = render_board(game, dh, gh);
+
+    dpp::message msg;
+    msg.content = "<@" + std::to_string(player_id) + "> swapped! <@" + std::to_string(game->get_current_player()) + ">'s turn.";
+    msg.allowed_mentions.parse_users = true;
+    msg.add_file("board.png", dpp::utility::read_file(path));
+    return msg;
+}
+
 dpp::message handle_game_over(uint64_t channel_id, uint64_t winner_id, uint64_t loser_id, GameManager& gm, DataHandler& dh)
 {
     int winner_elo = dh.get_elo(winner_id);
@@ -226,7 +278,7 @@ dpp::message handle_forfeit(const dpp::slashcommand_t& event, GameManager& gm, D
     if (game->get_player1() != player_id && game->get_player2() != player_id)
         return dpp::message("You are not a player in this game.").set_flags(dpp::m_ephemeral);
 
-    if (game->get_round() == 0)
+    if (game->get_move_count() < 2)
         return handle_game_cancel(channel_id, gm);
 
     uint64_t winner_id = (game->get_player1() == player_id) ? game->get_player2() : game->get_player1();

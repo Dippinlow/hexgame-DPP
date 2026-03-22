@@ -70,9 +70,9 @@ RenderData Game::get_render_data() const
     return rd;
 }
 
-int Game::get_round() const
+int Game::get_move_count() const
 {
-    return round;
+    return move_count;
 }
 
 std::time_t Game::get_last_move_time() const
@@ -129,11 +129,6 @@ bool Game::make_move(uint64_t player_id, int i, int j)
         next_turn();
 
         move_count++;
-        if (move_count == 2)
-        {
-            round++;
-            move_count = 0;
-        }
     } 
 
     return true;
@@ -149,6 +144,15 @@ Move Game::get_random_move() const
                 moves[count++] = {i, j};
 
     return moves[std::rand() % count];
+}
+
+void Game::swap_players()
+{
+    uint64_t tmp = players[0];
+    players[0] = players[1];
+    players[1] = tmp;
+    axis_swapped  = !axis_swapped;
+    move_count++;
 }
 
 // ----------------- Turn handling -----------------

@@ -95,6 +95,17 @@ int main()
         event.thinking(true);
         event.edit_original_response(handle_setname(event, dataHandler));
     }
+    else if(event.command.get_command_name() == "swap")
+    {
+        dpp::message error;
+        if(!validate_swap(event, gameManager, error))
+        {
+            event.reply(error);
+            return;
+        }
+        event.thinking();
+        event.edit_original_response(apply_swap(event, gameManager, dataHandler, graphicsHandler));
+    }
     else if (event.command.get_command_name() == "help")
     {
         std::string help =
@@ -143,8 +154,10 @@ int main()
 
             dpp::slashcommand leaderboard_cmd("leaderboard", "Top 10 players.", bot.me.id);
 
+            dpp::slashcommand swap_cmp("swap", "Steal the fist move.", bot.me.id);
+
             bot.global_bulk_command_create({challenge, move_cmd, setcolour_cmd, forfeit_cmd, stats_cmd, 
-                                                    setname_cmd, help_cmd, leaderboard_cmd});
+                                                    setname_cmd, help_cmd, leaderboard_cmd, swap_cmp});
         }
     });
 

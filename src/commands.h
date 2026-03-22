@@ -8,9 +8,11 @@
 
 bool validate_move(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err);
 bool validate_challenge(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err, uint64_t bot_id);
+bool validate_swap(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err);
 
 dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh, uint64_t bot_id);
 dpp::message apply_challenge(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh, uint64_t bot_id);
+dpp::message apply_swap(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh);
 
 dpp::message handle_forfeit(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh);
 dpp::message handle_stats(const dpp::slashcommand_t& event, DataHandler& dh);
