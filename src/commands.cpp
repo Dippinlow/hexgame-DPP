@@ -140,7 +140,7 @@ dpp::message apply_challenge(const dpp::slashcommand_t& event, GameManager& gm, 
 
 
     std::string path = render_board(game, dh, gh);
-    
+    msg.allowed_mentions.parse_users = true;
     msg.add_file("board.png", dpp::utility::read_file(path));
     return msg;
 }
@@ -175,6 +175,7 @@ dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataH
 
     dpp::message msg;
     msg.content = "<@" + std::to_string(game->get_current_player()) + ">'s turn.";
+    msg.allowed_mentions.parse_users = true;
     msg.add_file("board.png", dpp::utility::read_file(path));
     return msg;
 }
@@ -207,7 +208,7 @@ dpp::message handle_game_over(uint64_t channel_id, uint64_t winner_id, uint64_t 
     msg.content += "<@" + std::to_string(winner_id) + "> Rating: " + std::to_string(winner_elo) + " -> " + std::to_string(new_winner_elo) + "\n";
     msg.content += "<@" + std::to_string(loser_id)  + "> Rating: " + std::to_string(loser_elo)  + " -> " + std::to_string(new_loser_elo);
     msg.add_file("board.png", dpp::utility::read_file(path));
-
+    msg.allowed_mentions.parse_users = true;
     gm.end_game(channel_id);
 
     return msg;
