@@ -151,7 +151,7 @@ void Game::swap_players()
     uint64_t tmp = players[0];
     players[0] = players[1];
     players[1] = tmp;
-    axis_swapped  = !axis_swapped;
+    //axis_swapped  = !axis_swapped;
     move_count++;
 }
 
