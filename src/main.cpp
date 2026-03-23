@@ -104,7 +104,7 @@ int main()
             return;
         }
         event.thinking();
-        event.edit_original_response(apply_swap(event, gameManager, dataHandler, graphicsHandler));
+        event.edit_original_response(apply_swap(event, gameManager, dataHandler, graphicsHandler, BOT_ID));
     }
     else if (event.command.get_command_name() == "help")
     {

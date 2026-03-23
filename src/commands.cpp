@@ -215,13 +215,19 @@ dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataH
     return msg;
 }
 
-dpp::message apply_swap(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
+dpp::message apply_swap(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh, uint64_t bot_id)
 {
     uint64_t channel_id = event.command.channel_id;
     uint64_t player_id  = event.command.get_issuing_user().id;
 
     Game* game = gm.get_game(channel_id);
     game->swap_players();
+
+    if (game->get_current_player() == bot_id)
+    {
+        Move m = game->get_random_move();
+        game->make_move(bot_id, m.i, m.j);
+    }
 
     std::string path = render_board(game, dh, gh);
 
