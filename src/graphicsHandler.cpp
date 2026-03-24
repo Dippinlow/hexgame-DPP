@@ -130,10 +130,14 @@ std::string GraphicsHandler::render_gameplay_gif(uint64_t channel_id)
 {
     std::string basePath = "../temp/game_" + std::to_string(channel_id);
     std::string gifPath = basePath + "/output.gif";
+    std::string palettePath = basePath + "/palette.png";
 
-    std::string cmd = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -loop 0 " + gifPath;
+    std::string cmd1 = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -vf palettegen " + palettePath;
 
-    system(cmd.c_str());
+    std::string cmd2 = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -i " + palettePath + " -lavfi paletteuse -loop 0 " + gifPath;
+
+    system(cmd1.c_str());
+    system(cmd2.c_str());
 
     return gifPath;
 }
