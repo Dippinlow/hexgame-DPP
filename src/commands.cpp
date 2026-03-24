@@ -313,27 +313,6 @@ dpp::message handle_game_over(uint64_t channel_id, uint64_t winner_id, uint64_t 
 
     return msg;
 }
-/*
-dpp::message handle_forfeit(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
-{
-    uint64_t channel_id = event.command.channel_id;
-    uint64_t player_id  = event.command.get_issuing_user().id;
-
-    Game* game = gm.get_game(channel_id);
-    if (!game)
-        return dpp::message("No current game in this channel.").set_flags(dpp::m_ephemeral);
-
-    if (game->get_player1() != player_id && game->get_player2() != player_id)
-        return dpp::message("You are not a player in this game.").set_flags(dpp::m_ephemeral);
-
-    if (game->get_move_count() < 2)
-        return handle_game_cancel(channel_id, gm);
-
-    uint64_t winner_id = (game->get_player1() == player_id) ? game->get_player2() : game->get_player1();
-
-    return handle_game_over(channel_id, winner_id, player_id, gm, dh, gh);
-}
-*/
 dpp::message handle_stats(const dpp::slashcommand_t& event, DataHandler& dh)
 {
     uint64_t player_id = event.command.get_issuing_user().id;

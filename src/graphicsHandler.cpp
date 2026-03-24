@@ -134,7 +134,7 @@ std::string GraphicsHandler::render_gameplay_gif(uint64_t channel_id)
 
     std::string cmd1 = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -vf palettegen " + palettePath;
 
-    std::string cmd2 = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -i " + palettePath + " -lavfi paletteuse -loop 0 " + gifPath;
+    std::string cmd2 = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -i " + palettePath + " -lavfi paletteuse -loop -1 " + gifPath;
 
     system(cmd1.c_str());
     system(cmd2.c_str());
