@@ -5,3 +5,14 @@
 A Discord bot for playing [Hex](https://en.wikipedia.org/wiki/Hex_(board_game)).
 
 [Add to Discord](https://discord.com/oauth2/authorize?client_id=1483211926510239986)
+
+
+This project uses the CImg library (CeCILL-C license).
+
+## Dependencies
+
+- DPP (Discord C++ library)
+- CImg (image processing)
+- nlohmann/json (JSON handling)
+- FFmpeg (GIF generation)
+- libpng (PNG support)

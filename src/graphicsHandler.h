@@ -2,8 +2,8 @@
 
 #include <string>
 #include <cstdint>
-#include "CImgConfig.h"
 #include "renderData.h"
+#include "CImgConfig.h"
 
 using namespace cimg_library;
 
