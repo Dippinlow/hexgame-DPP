@@ -1,4 +1,5 @@
 #include "graphicsHandler.h"
+#include <filesystem>
 
 static const int ANTI_ALIASING = 4; 
 
@@ -85,7 +86,7 @@ void GraphicsHandler::dim_colour(unsigned char* col, unsigned char* out, float f
 
 
 std::string GraphicsHandler::render(const RenderData& rd, const std::string& c1_hex, const std::string& c2_hex, 
-                                    const std::string& n1, const std::string& n2)
+                                    const std::string& n1, const std::string& n2, int move_count)
 {
     unsigned char colour1[3], colour2[3];
     hex_to_rgb(c1_hex, colour1);
@@ -111,13 +112,30 @@ std::string GraphicsHandler::render(const RenderData& rd, const std::string& c1_
     unsigned char* left_col  = rd.axis_swapped ? colour2 : colour1;
     unsigned char* right_col = rd.axis_swapped ? colour1 : colour2;
 
-draw_banner_left(img,  left_name,  left_col);
-draw_banner_right(img, right_name, right_col);
+    draw_banner_left(img,  left_name,  left_col);
+    draw_banner_right(img, right_name, right_col);
 
     img = img.resize(IMG_WIDTH, IMG_HEIGHT, 1, 3, 6);
-    std::string path = "../temp/board_" + std::to_string(rd.channel_id) + ".png";
+
+
+    std::string dir  = "../temp/game_" + std::to_string(rd.channel_id);
+    std::string path = dir + "/move_" + std::to_string(move_count) + ".png";
+
+    std::filesystem::create_directories(dir);
     img.save_png(path.c_str());
     return path;
+}
+
+std::string GraphicsHandler::render_gameplay_gif(uint64_t channel_id)
+{
+    std::string basePath = "../temp/game_" + std::to_string(channel_id);
+    std::string gifPath = basePath + "/output.gif";
+
+    std::string cmd = "ffmpeg -y -framerate 2 -i " + basePath + "/move_%d.png -loop 0 " + gifPath;
+
+    system(cmd.c_str());
+
+    return gifPath;
 }
 
 void GraphicsHandler::hex_to_rgb(const std::string& hex, unsigned char rgb[3])

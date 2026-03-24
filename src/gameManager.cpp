@@ -1,6 +1,7 @@
 #include "gameManager.h"
 #include <string>
 #include <cstdio>
+#include <filesystem>
 
 bool GameManager::has_game(uint64_t channel_id) const
 {
@@ -24,8 +25,10 @@ Game* GameManager::get_game(uint64_t channel_id)
 
 void GameManager::end_game(uint64_t channel_id)
 {
-    std::string path = "../temp/board_" + std::to_string(channel_id) + ".png";
-    std::remove(path.c_str());
+    std::string path = "../temp/game_" + std::to_string(channel_id);
+
+    std::filesystem::remove_all(path);
+
     active_games.erase(channel_id);
 }
 
@@ -39,7 +42,7 @@ std::vector<uint64_t> GameManager::get_timed_out_games(int timeout_seconds) cons
     std::vector<uint64_t> timed_out;
     std::time_t now = std::time(nullptr);
 
-    std::lock_guard<std::mutex> lock(mtx); // ← ONLY CHANGE
+    std::lock_guard<std::mutex> lock(mtx);
 
     for (const auto& pair : active_games)
         if (now - pair.second.get_last_move_time() > timeout_seconds) 

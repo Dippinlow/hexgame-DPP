@@ -13,7 +13,9 @@ public:
     GraphicsHandler();
 
     std::string render(const RenderData& rd, const std::string& c1_hex, 
-                        const std::string& c2_hex, const std::string& n1, const std::string& n2);
+                        const std::string& c2_hex, const std::string& n1, const std::string& n2, 
+                        int move_count);
+    std::string render_gameplay_gif(uint64_t channel_id);
 
 private:
     void hex_to_rgb(const std::string& hex, unsigned char rgb[3]);

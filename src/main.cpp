@@ -77,7 +77,14 @@ int main()
     }
     else if (event.command.get_command_name() == "forfeit")
     {
-        event.reply(handle_forfeit(event, gameManager, dataHandler));
+        dpp::message error;
+        if(!validate_forfeit(event, gameManager, error))
+        {
+            event.reply(error);
+            return;
+        }
+        event.thinking();
+        event.edit_original_response(apply_forfeit(event, gameManager, dataHandler, graphicsHandler));
         update_presence(bot, gameManager);
     }
     else if (event.command.get_command_name() == "stats")

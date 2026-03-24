@@ -16,7 +16,8 @@ std::string render_board(const Game* game, DataHandler& dh, GraphicsHandler& gh)
     std::string colour2 = dh.get_colour(game->get_player2());
     std::string name1   = dh.get_name(game->get_player1());
     std::string name2   = dh.get_name(game->get_player2());
-    return gh.render(rd, colour1, colour2, name1, name2);
+    int move_count = game->get_move_count();
+    return gh.render(rd, colour1, colour2, name1, name2, move_count);
 }
 
 dpp::message handle_game_cancel(uint64_t channel_id, GameManager& gm)
@@ -129,6 +130,25 @@ bool validate_swap(const dpp::slashcommand_t& event, GameManager& gm, dpp::messa
     return true;
 }
 
+bool validate_forfeit(const dpp::slashcommand_t& event, GameManager& gm, dpp::message& err)
+{
+    uint64_t channel_id = event.command.channel_id;
+    uint64_t player_id  = event.command.get_issuing_user().id;
+
+    Game* game = gm.get_game(channel_id);
+    if (!game){
+        err = dpp::message("No current game in this channel.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
+    if (game->get_player1() != player_id && game->get_player2() != player_id){
+        err = dpp::message("You are not a player in this game.").set_flags(dpp::m_ephemeral);
+        return false;
+    }
+
+    return true;
+}
+
 // apply commands
 
 dpp::message apply_challenge(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh, uint64_t bot_id)
@@ -198,14 +218,13 @@ dpp::message apply_move(const dpp::slashcommand_t& event, GameManager& gm, DataH
         Move m = game->get_random_move();
         game->make_move(bot_id, m.i, m.j);
     }
-
     std::string path = render_board(game, dh, gh);
 
     if (game->is_over())
     {
         uint64_t winner_id = game->get_winner_id();
         uint64_t loser_id  = game->get_loser_id();
-        return handle_game_over(channel_id, winner_id, loser_id, gm, dh);
+        return handle_game_over(channel_id, winner_id, loser_id, gm, dh, gh);
     }
 
     dpp::message msg;
@@ -238,7 +257,21 @@ dpp::message apply_swap(const dpp::slashcommand_t& event, GameManager& gm, DataH
     return msg;
 }
 
-dpp::message handle_game_over(uint64_t channel_id, uint64_t winner_id, uint64_t loser_id, GameManager& gm, DataHandler& dh)
+dpp::message apply_forfeit(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
+{
+    uint64_t channel_id = event.command.channel_id;
+    uint64_t player_id  = event.command.get_issuing_user().id;
+
+    Game* game = gm.get_game(channel_id);
+
+    if (game->get_move_count() < 2) return handle_game_cancel(channel_id, gm);
+
+    uint64_t winner_id = (game->get_player1() == player_id) ? game->get_player2() : game->get_player1();
+
+    return handle_game_over(channel_id, winner_id, player_id, gm, dh, gh);
+}
+
+dpp::message handle_game_over(uint64_t channel_id, uint64_t winner_id, uint64_t loser_id, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
 {
     int winner_elo = dh.get_elo(winner_id);
     int loser_elo  = dh.get_elo(loser_id);
@@ -260,19 +293,28 @@ dpp::message handle_game_over(uint64_t channel_id, uint64_t winner_id, uint64_t 
 
     dpp::message msg;
 
-    std::string path = "../temp/board_" + std::to_string(channel_id) + ".png";
+    Game* game = gm.get_game(channel_id);
+    int lastMove = game->get_move_count();
+
+    std::string basePath = "../temp/game_" + std::to_string(channel_id);
+    std::string lastDisplay = basePath + "/move_" + std::to_string(lastMove) + ".png";
 
     msg.content  = "<@" + std::to_string(winner_id) + "> wins!\n";
     msg.content += "<@" + std::to_string(winner_id) + "> Rating: " + std::to_string(winner_elo) + " -> " + std::to_string(new_winner_elo) + "\n";
     msg.content += "<@" + std::to_string(loser_id)  + "> Rating: " + std::to_string(loser_elo)  + " -> " + std::to_string(new_loser_elo);
-    msg.add_file("board.png", dpp::utility::read_file(path));
+
+    msg.add_file("board.png", dpp::utility::read_file(lastDisplay));
     msg.allowed_mentions.parse_users = true;
+
+    std::string gifPath = gh.render_gameplay_gif(channel_id);
+    msg.add_file("gameplay.gif", dpp::utility::read_file(gifPath));
+
     gm.end_game(channel_id);
 
     return msg;
 }
-
-dpp::message handle_forfeit(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh)
+/*
+dpp::message handle_forfeit(const dpp::slashcommand_t& event, GameManager& gm, DataHandler& dh, GraphicsHandler& gh)
 {
     uint64_t channel_id = event.command.channel_id;
     uint64_t player_id  = event.command.get_issuing_user().id;
@@ -289,8 +331,9 @@ dpp::message handle_forfeit(const dpp::slashcommand_t& event, GameManager& gm, D
 
     uint64_t winner_id = (game->get_player1() == player_id) ? game->get_player2() : game->get_player1();
 
-    return handle_game_over(channel_id, winner_id, player_id, gm, dh);
+    return handle_game_over(channel_id, winner_id, player_id, gm, dh, gh);
 }
+*/
 dpp::message handle_stats(const dpp::slashcommand_t& event, DataHandler& dh)
 {
     uint64_t player_id = event.command.get_issuing_user().id;
